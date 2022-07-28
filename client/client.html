@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat room</title>
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"
+      integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k"
+      crossorigin="anonymous"></script>
+  </head>
+
+  <body>
+    <button onclick="sendMessage()">Send Message</button>
+    <button onclick="leaveRoom()">Leave Room</button>
+  </body>
+  <script>
+    // Connect to socket server running on port 5001
+    const socket = io.connect('http://127.0.0.1:5001');
+
+    // Logic to generate random message and room
+    let id = Math.floor(Math.random() * 100) + 1
+    const randomMessage = (len) => {
+      return Math.random().toString(36).substring(2, len + 2);
+    }
+    message = randomMessage(20)
+    room = 'room1'
+
+
+    /*
+      - Get username: from logged in username
+      - Get room: group you want user to get connected on
+    */
+
+    socket.on('connect', function () {
+      socket.emit('join_room', {
+        username: `user ${id}`,
+        room: `${room}`,
+      });
+    });
+
+    // Announcement on room join
+    socket.on('join_room_announcement', function (data) {
+      console.log(data);
+    });
+
+    // Announcement on room leave
+    socket.on('leave_room_announcement', function (data) {
+      console.log(data);
+    });
+
+    // Leave Room
+    function leaveRoom() {
+      socket.emit('leave_room', {
+        username: `user ${id}`,
+        room: `${room}`,
+      });
+      socket.disconnect();
+    }
+
+    //send message
+    function sendMessage() {
+      socket.emit('send_message', {
+        username: `user ${id}`,
+        room: `${room}`,
+        message: `${message}`
+      });
+    }
+
+    // receive message
+    socket.on('receive_message', function (data) {
+      console.log(data);
+    });
+
+  </script>
+
+</html>
